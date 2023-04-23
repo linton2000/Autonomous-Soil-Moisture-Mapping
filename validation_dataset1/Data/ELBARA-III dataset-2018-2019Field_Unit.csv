@@ -1,0 +1,17 @@
+Field,Description,Unit,,Field,Description,Unit,,Field,Description,Unit,,Field,Description,Unit
+Datetime,time,mm/dd/yyyy hh:mm:ss AM/PM ,,SM2_5_1,Soil moisture at 2.5 cm,cm3/cm3,,Incidence angle,,°,,MODIS LAI_HANTS,Processed MODIS LAI,m2/m2
+air temperature at 2m,air temperature measured at 2 m ,°C,,SM2_5_2,Soil moisture at 2.5 cm,cm3/cm3,,TBH,TB at H polarization,K,,LAI_IN SITU,MODIS measured in situ ,m2/m2
+longwave_downward,Radiation,W/m2,,SM05,Soil moisture at 5 cm,cm3/cm3,,TBV,TB at V polarization,K,,,,
+longwave_upwelling,Radiation,W/m2,,SM10,Soil moisture at 10 cm,cm3/cm3,,,,,,,,
+shortwave_downward,Radiation,W/m2,,SM20,Soil moisture at 20 cm,cm3/cm3,,,,,,,,
+shortwave_upwelling,Radiation,W/m2,,SM35,Soil moisture at 35 cm,cm3/cm3,,,,,,,,
+Pre_situ_mm,precipitation amount ,mm,,SM60,Soil moisture at 60 cm,cm3/cm3,,Field,Description,Unit,,,,
+relative humidity ,,%,,SM100,Soil moisture at 100 cm,cm3/cm3,,tb_h_fore,Fore-looking data for H polarization,K,,,,
+wind_speed,,m/s,,ST2_5_1,Soil temperature at 2.5 cm,K,,tb_v_fore,Fore-looking data for V polarization,K,,,,
+wind_direction,,°,,ST2_5_2,Soil temperature at 2.5 cm,K,,tb_h_aft,After-looking data for H polarization,K,,,,
+air pressure,,Pa,,ST05,Soil temperature at 5 cm,K,,tb_v_aft,After-looking data for V polarization,K,,,,
+,,,,ST10,Soil temperature at 10 cm,K,,,,,,,,
+,,,,ST20,Soil temperature at 20 cm,K,,,,,,,,
+,,,,ST35,Soil temperature at 35 cm,K,,,,,,,,
+,,,,ST60,Soil temperature at 60 cm,K,,,,,,,,
+,,,,ST100,Soil temperature at 100 cm,K,,,,,,,,

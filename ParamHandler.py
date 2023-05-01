@@ -1,104 +1,16 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import *
 import pyspark.sql.functions as F
-from IPython.display import display
+from schema import tibetan_data_df_schm, csv2_df_schm
+import pandas as pd
 
 class ParamHandler:
-    tibetan_data_df_schm = StructType([
-        StructField('Datetime', StringType(), True),
-        # Temperature Brightness - dual-polarised at incident angles: 45, 50, 55, 60, 65 & 70
-        StructField('TBH_40', FloatType(), True),
-        StructField('TBV_40', FloatType(), True),
-        StructField('TBH_45', FloatType(), True),
-        StructField('TBV_45', FloatType(), True),
-        StructField('TBH_50', FloatType(), True),
-        StructField('TBV_50', FloatType(), True),
-        StructField('TBH_55', FloatType(), True),
-        StructField('TBV_55', FloatType(), True),
-        StructField('TBH_60', FloatType(), True),
-        StructField('TBV_60', FloatType(), True),
-        StructField('TBH_65', FloatType(), True),
-        StructField('TBV_65', FloatType(), True),
-        StructField('TBH_70', FloatType(), True),
-        StructField('TBV_70', FloatType(), True),
-        # Average Soil Moisture & Temperature values for in-situ sensors LC & Z
-        StructField('Avg_SM_LC', FloatType(), True),
-        StructField('Avg_SM_Z', FloatType(), True),
-        # Surface Temperature (2-5cm)
-        StructField('Avg_STS_LC', FloatType(), True),
-        StructField('Avg_STS_Z', FloatType(), True),
-        # Average Temp. at Depth (5cm+)
-        StructField('Avg_STD_LC', FloatType(), True),
-        StructField('Avg_STD_Z', FloatType(), True),
-    ])
-
-    csv2_df_schm = StructType([
-        StructField('Datetime', StringType(), True),
-        StructField('SM2_5_1', FloatType(), True),
-        StructField('SM2_5_2', FloatType(), True),
-        StructField('SM05', FloatType(), True),
-        StructField('SM7_5', FloatType(), True),
-        StructField('SM10', FloatType(), True),
-        StructField('SM12_5', FloatType(), True),
-        StructField('SM15', FloatType(), True),
-        StructField('SM17_5', FloatType(), True),
-        StructField('SM20', FloatType(), True),
-        StructField('SM25', FloatType(), True),
-        StructField('SM30', FloatType(), True),
-        StructField('SM35', FloatType(), True),
-        StructField('SM40', FloatType(), True),
-        StructField('SM45', FloatType(), True),
-        StructField('SM50', FloatType(), True),
-        StructField('SM60', FloatType(), True),
-        StructField('SM70', FloatType(), True),
-        StructField('SM80', FloatType(), True),
-        StructField('SM90', FloatType(), True),
-        StructField('SM100', FloatType(), True),
-        StructField('ST2_5_1', FloatType(), True),
-        StructField('ST2_5_2', FloatType(), True),
-        StructField('ST05', FloatType(), True),
-        StructField('ST7_5', FloatType(), True),
-        StructField('ST10', FloatType(), True),
-        StructField('ST12_5', FloatType(), True),
-        StructField('ST15', FloatType(), True),
-        StructField('ST17_5', FloatType(), True),
-        StructField('ST20', FloatType(), True),
-        StructField('ST25', FloatType(), True),
-        StructField('ST30', FloatType(), True),
-        StructField('ST35', FloatType(), True),
-        StructField('ST40', FloatType(), True),
-        StructField('ST45', FloatType(), True),
-        StructField('ST50', FloatType(), True),
-        StructField('ST60', FloatType(), True),
-        StructField('ST70', FloatType(), True),
-        StructField('ST80', FloatType(), True),
-        StructField('ST90', FloatType(), True),
-        StructField('ST100', FloatType(), True),
-    ])
-
-    csv3_df_schm = StructType([
-        StructField('Datetime', StringType(), True),
-        StructField('SM05', FloatType(), True),
-        StructField('SM10', FloatType(), True),
-        StructField('SM20', FloatType(), True),
-        StructField('SM40', FloatType(), True),
-        StructField('SM80', FloatType(), True),
-        StructField('SM160', FloatType(), True),
-        StructField('ST05', FloatType(), True),
-        StructField('ST10', FloatType(), True),
-        StructField('ST20', FloatType(), True),
-        StructField('ST40', FloatType(), True),
-        StructField('ST80', FloatType(), True),
-        StructField('ST160', FloatType(), True),
-    ])
 
     def __init__(self) -> None:
+        # Apach Spark (Data Extraction, Processing & ML engine) initialization
         self.spark: SparkSession = SparkSession.builder.master('local[*]')\
                                                        .appName('SM Retreival App').getOrCreate()
         self.spark.sparkContext.setLogLevel('ERROR')
-        # Measured Data
-        self.data_df = self.spark.createDataFrame(
-            data=self.spark.sparkContext.emptyRDD(), schema=ParamHandler.tibetan_data_df_schm)
+
         # Variable (Retrieval) Parameters
         self.param_dict: dict = {
             'tb_simV': 0,        # Simulated Brightness Temp. (K) for V-pol
@@ -130,18 +42,17 @@ class ParamHandler:
             'tc': 0,             # Canopy Temp.
         }
     
-    def load_tibetan_csv_data(self, csv1: str, csv2: str, csv3: str):
-        csv1_cols = ['Datetime', 'TBH_40', 'TBV_40', 'TBH_45', 'TBV_45', 'TBH_50', 'TBV_50', \
-                     'TBH_55', 'TBV_55', 'TBH_60', 'TBV_60', 'TBH_65', 'TBV_65', 'TBH_70', 'TBV_70']
-
-        #csv2_cols = ['Datetime', 'SM2_5_1', 'SM2_5_2', 'SM05', 'SM7_5', 'SM10', 'SM12_5', 'SM15', 'SM17_5', 'SM20', 'SM25', 'SM30', 'SM35', 'SM40', 'SM45', 'SM50', 'SM60', 'SM70', 'SM80', 'SM90', 'SM100', 'ST2_5_1', 'ST2_5_2', 'ST05', 'ST7_5', 'ST10', 'ST12_5', 'ST15', 'ST17_5', 'ST20', 'ST25', 'ST30', 'ST35', 'ST40', 'ST45', 'ST50', 'ST60', 'ST70', 'ST80', 'ST90', 'ST100'] 
-        
-        self.data_df = self.spark.read.csv(csv1, header=True).select(csv1_cols)
+    def load_tibetan_csv_data(self, csv1: str, csv2: str):
+        # Reading CSV Files
+        self.data_df = self.spark.read.format('csv').options(header=True, multiline=True, inferSchema=True)\
+                                      .schema(tibetan_data_df_schm).load(csv1)
         csv2_df = self.spark.read.format('csv').options(header=True, multiline=True, inferSchema=True)\
-                                 .schema(ParamHandler.csv2_df_schm).load(csv2)
-        csv3_df = self.spark.read.csv(csv3, header=True, schema=ParamHandler.csv3_df_schm)
-        print(csv2_df.toPandas())
-        print(ParamHandler._count_null(csv2_df))
+                                 .schema(csv2_df_schm).load(csv2)
+
+        # Extracting needed columns
+        data_cols = ['Datetime', 'TBH_40', 'TBV_40', 'TBH_45', 'TBV_45', 'TBH_50', 'TBV_50', \
+                     'TBH_55', 'TBV_55', 'TBH_60', 'TBV_60', 'TBH_65', 'TBV_65', 'TBH_70', 'TBV_70']
+        self.data_df = self.data_df.select(data_cols)
 
         # Calculating Avg. Soil Moisuture & Temp for data df
         @F.udf
@@ -153,30 +64,30 @@ class ParamHandler:
                     count += 1
             return res/count
         
-        csv2_df = csv2_df.withColumn('Avg_SM_LC', avg_func(F.array(csv2_df.columns[1:21])))\
-                         .withColumn('Avg_STS_LC', avg_func(F.array(csv2_df.columns[21:24])))\
-                         .withColumn('Avg_STD_LC', avg_func(F.array(csv2_df.columns[24:])))\
-                         .withColumnRenamed('Datetime', 'Datetime1')\
-                         .select('Datetime1', 'Avg_SM_LC', 'Avg_STS_LC', 'Avg_STD_LC')
-        csv3_df = csv3_df.withColumn('Avg_SM_Z', avg_func(F.array(csv3_df.columns[7:])))\
-                         .withColumn('Avg_STD_Z', avg_func(F.array(csv3_df.columns[2:7])))\
-                         .withColumn('Avg_STS_Z', F.col(csv3_df.columns[1]))\
-                         .withColumnRenamed('Datetime', 'Datetime2')\
-                         .select('Datetime2', 'Avg_SM_Z', 'Avg_STS_Z', 'Avg_STD_Z')
-        
-        print(csv2_df.toPandas())
-        print(ParamHandler._count_null(csv2_df))
-        self.data_df = self.data_df.join(csv2_df, self.data_df['Datetime']==csv2_df['Datetime1'], how='inner')
-        #print(self.data_df.toPandas())
-        #self.data_df = self.data_df.join(csv3_df, self.data_df['Datetime']==csv3_df['Datetime2'], how='inner')
-        #self.data_df = self.data_df.select([cl for cl in self.data_df.columns if cl not in ['Datetime1', 'Datetime2']])
+        csv2_df = csv2_df.withColumn('Avg_SM_LC', avg_func(F.array(csv2_df.columns[1:21])).cast('float'))\
+                         .withColumn('Avg_STS_LC', avg_func(F.array(csv2_df.columns[21:24])).cast('float'))\
+                         .withColumn('Avg_STD_LC', avg_func(F.array(csv2_df.columns[24:])).cast('float'))\
+                         .withColumnRenamed('Datetime', 'Datetime_LC')\
+                         .select('Datetime_LC', 'Avg_SM_LC', 'Avg_STS_LC', 'Avg_STD_LC')
+
+        # Joining Measured data with corresponding validation data
+        self.data_df = self.data_df.join(csv2_df, self.data_df['Datetime']==csv2_df['Datetime_LC'], how='inner')
+        self.data_df = self.data_df.select([cl for cl in self.data_df.columns if cl != 'Datetime_LC'])
 
     def _count_null(df):
-        return df.select([F.count(F.when(F.col(c).isNull(), c)).alias(c) for c in df.columns]).toPandas()
+        return df.select([F.count(F.when(F.col(c).isNull() | F.isnan(c), c)).alias(c) for c in df.columns])
 
     def print_data_df(self):
-        display(self.data_df.toPandas())
-        """ self.data_df.printSchema()
-        self.data_df.summary().show()
-        print(self.data_df.count)
-        self.data_df.select([F.count(F.when(F.isnan(c) | F.col(c).isNull(), c)).alias(c) for c in self.data_df.columns]).show() """
+        print(f'\nNo. of Records in data_df: {self.data_df.count()}')
+        print('\nSchema:')
+        self.data_df.printSchema()
+        # Using Pandas to display all columns neatly
+        pd.set_option('display.max_columns', None)
+        data_pdf = self.data_df.toPandas()
+        null_pdf = ParamHandler._count_null(self.data_df).toPandas()
+        print('\nContents:')
+        print(data_pdf)
+        print('\nColumn Null Counts:')
+        print(null_pdf)
+        print('\nStatistical Summary:')
+        print(data_pdf.describe())

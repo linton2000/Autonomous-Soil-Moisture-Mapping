@@ -5,7 +5,7 @@ from IPython.display import display
 
 class ParamHandler:
     tibetan_data_df_schm = StructType([
-        StructField('Datetime', TimestampType(), True),
+        StructField('Datetime', StringType(), True),
         # Temperature Brightness - dual-polarised at incident angles: 45, 50, 55, 60, 65 & 70
         StructField('TBH_40', FloatType(), True),
         StructField('TBV_40', FloatType(), True),
@@ -33,7 +33,7 @@ class ParamHandler:
     ])
 
     csv2_df_schm = StructType([
-        StructField('Datetime', TimestampType(), True),
+        StructField('Datetime', StringType(), True),
         StructField('SM2_5_1', FloatType(), True),
         StructField('SM2_5_2', FloatType(), True),
         StructField('SM05', FloatType(), True),
@@ -77,7 +77,7 @@ class ParamHandler:
     ])
 
     csv3_df_schm = StructType([
-        StructField('Datetime', TimestampType(), True),
+        StructField('Datetime', StringType(), True),
         StructField('SM05', FloatType(), True),
         StructField('SM10', FloatType(), True),
         StructField('SM20', FloatType(), True),
@@ -133,14 +133,26 @@ class ParamHandler:
     def load_tibetan_csv_data(self, csv1: str, csv2: str, csv3: str):
         csv1_cols = ['Datetime', 'TBH_40', 'TBV_40', 'TBH_45', 'TBV_45', 'TBH_50', 'TBV_50', \
                      'TBH_55', 'TBV_55', 'TBH_60', 'TBV_60', 'TBH_65', 'TBV_65', 'TBH_70', 'TBV_70']
+
+        #csv2_cols = ['Datetime', 'SM2_5_1', 'SM2_5_2', 'SM05', 'SM7_5', 'SM10', 'SM12_5', 'SM15', 'SM17_5', 'SM20', 'SM25', 'SM30', 'SM35', 'SM40', 'SM45', 'SM50', 'SM60', 'SM70', 'SM80', 'SM90', 'SM100', 'ST2_5_1', 'ST2_5_2', 'ST05', 'ST7_5', 'ST10', 'ST12_5', 'ST15', 'ST17_5', 'ST20', 'ST25', 'ST30', 'ST35', 'ST40', 'ST45', 'ST50', 'ST60', 'ST70', 'ST80', 'ST90', 'ST100'] 
         
         self.data_df = self.spark.read.csv(csv1, header=True).select(csv1_cols)
-        csv2_df = self.spark.read.csv(csv2, header=True, schema=ParamHandler.csv2_df_schm)
+        csv2_df = self.spark.read.format('csv').options(header=True, multiline=True, inferSchema=True)\
+                                 .schema(ParamHandler.csv2_df_schm).load(csv2)
         csv3_df = self.spark.read.csv(csv3, header=True, schema=ParamHandler.csv3_df_schm)
+        print(csv2_df.toPandas())
+        print(ParamHandler._count_null(csv2_df))
 
-        display(self.data_df.toPandas())
         # Calculating Avg. Soil Moisuture & Temp for data df
-        avg_func = F.udf(lambda cols: F.sum(cols)/len(cols), FloatType())
+        @F.udf
+        def avg_func(cols):
+            res, count = 0, 0
+            for cl in cols:
+                if cl is not None:
+                    res += cl
+                    count += 1
+            return res/count
+        
         csv2_df = csv2_df.withColumn('Avg_SM_LC', avg_func(F.array(csv2_df.columns[1:21])))\
                          .withColumn('Avg_STS_LC', avg_func(F.array(csv2_df.columns[21:24])))\
                          .withColumn('Avg_STD_LC', avg_func(F.array(csv2_df.columns[24:])))\
@@ -152,9 +164,15 @@ class ParamHandler:
                          .withColumnRenamed('Datetime', 'Datetime2')\
                          .select('Datetime2', 'Avg_SM_Z', 'Avg_STS_Z', 'Avg_STD_Z')
         
+        print(csv2_df.toPandas())
+        print(ParamHandler._count_null(csv2_df))
         self.data_df = self.data_df.join(csv2_df, self.data_df['Datetime']==csv2_df['Datetime1'], how='inner')
+        #print(self.data_df.toPandas())
         #self.data_df = self.data_df.join(csv3_df, self.data_df['Datetime']==csv3_df['Datetime2'], how='inner')
         #self.data_df = self.data_df.select([cl for cl in self.data_df.columns if cl not in ['Datetime1', 'Datetime2']])
+
+    def _count_null(df):
+        return df.select([F.count(F.when(F.col(c).isNull(), c)).alias(c) for c in df.columns]).toPandas()
 
     def print_data_df(self):
         display(self.data_df.toPandas())

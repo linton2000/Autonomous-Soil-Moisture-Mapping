@@ -1,0 +1,77 @@
+from pyspark.sql.types import *
+
+tibetan_data_df_schm = StructType([
+        StructField('Datetime', StringType(), True),
+        # Temperature Brightness - dual-polarised at 7 incidence angles
+        StructField('Incidence angle 1', FloatType(), True),
+        StructField('TBH_40', FloatType(), True),
+        StructField('TBV_40', FloatType(), True),
+
+        StructField('Incidence angle 2', FloatType(), True),
+        StructField('TBH_45', FloatType(), True),
+        StructField('TBV_45', FloatType(), True),
+
+        StructField('Incidence angle 3', FloatType(), True),
+        StructField('TBH_50', FloatType(), True),
+        StructField('TBV_50', FloatType(), True),
+
+        StructField('Incidence angle 4', FloatType(), True),
+        StructField('TBH_55', FloatType(), True),
+        StructField('TBV_55', FloatType(), True),
+
+        StructField('Incidence angle 5', FloatType(), True),
+        StructField('TBH_60', FloatType(), True),
+        StructField('TBV_60', FloatType(), True),
+
+        StructField('Incidence angle 6', FloatType(), True),
+        StructField('TBH_65', FloatType(), True),
+        StructField('TBV_65', FloatType(), True),
+
+        StructField('Incidence angl 7e', FloatType(), True),
+        StructField('TBH_70', FloatType(), True),
+        StructField('TBV_70', FloatType(), True),
+    ])
+
+csv2_df_schm = StructType([
+        StructField('Datetime', StringType(), True),
+        StructField('SM2_5_1', FloatType(), True),
+        StructField('SM2_5_2', FloatType(), True),
+        StructField('SM05', FloatType(), True),
+        StructField('SM7_5', FloatType(), True),
+        StructField('SM10', FloatType(), True),
+        StructField('SM12_5', FloatType(), True),
+        StructField('SM15', FloatType(), True),
+        StructField('SM17_5', FloatType(), True),
+        StructField('SM20', FloatType(), True),
+        StructField('SM25', FloatType(), True),
+        StructField('SM30', FloatType(), True),
+        StructField('SM35', FloatType(), True),
+        StructField('SM40', FloatType(), True),
+        StructField('SM45', FloatType(), True),
+        StructField('SM50', FloatType(), True),
+        StructField('SM60', FloatType(), True),
+        StructField('SM70', FloatType(), True),
+        StructField('SM80', FloatType(), True),
+        StructField('SM90', FloatType(), True),
+        StructField('SM100', FloatType(), True),
+        StructField('ST2_5_1', FloatType(), True),
+        StructField('ST2_5_2', FloatType(), True),
+        StructField('ST05', FloatType(), True),
+        StructField('ST7_5', FloatType(), True),
+        StructField('ST10', FloatType(), True),
+        StructField('ST12_5', FloatType(), True),
+        StructField('ST15', FloatType(), True),
+        StructField('ST17_5', FloatType(), True),
+        StructField('ST20', FloatType(), True),
+        StructField('ST25', FloatType(), True),
+        StructField('ST30', FloatType(), True),
+        StructField('ST35', FloatType(), True),
+        StructField('ST40', FloatType(), True),
+        StructField('ST45', FloatType(), True),
+        StructField('ST50', FloatType(), True),
+        StructField('ST60', FloatType(), True),
+        StructField('ST70', FloatType(), True),
+        StructField('ST80', FloatType(), True),
+        StructField('ST90', FloatType(), True),
+        StructField('ST100', FloatType(), True),
+    ])

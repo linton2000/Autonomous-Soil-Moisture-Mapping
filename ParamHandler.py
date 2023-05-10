@@ -40,7 +40,14 @@ class ParamHandler:
         if data_opt == 'tibetan':
             self.df_handler.load_tibetan_csv_data()
 
+    # Updating param_dict with a new subset dict
+    def patch_dict(self, ndict: dict) -> None:
+        for (key, val) in ndict:
+            self.param_dict[key] = val
+
     def print_data(self, also_df=False):
-        if also_df: self.df_handler.print_data_df()
-        param_str = "\n  ".join("{0} = {1}".format(k, v)  for k,v in self.param_dict.items())
+        if also_df:
+            self.df_handler.print_data_df()
+        param_str = "\n  ".join("{0} = {1}".format(k, v)
+                                for k, v in self.param_dict.items())
         print('\nParameters:\n', param_str)

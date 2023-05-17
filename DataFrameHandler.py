@@ -2,6 +2,9 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 import pandas as pd
 from pyspark.sql.types import DoubleType, FloatType
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY
 from schema import tibetan_data_df_schm, val_df_schm
 
 
@@ -73,3 +76,32 @@ class DataFrameHandler():
         if show_stats:
             print('\nStatistical Summary:')
             print(data_pdf.describe())
+
+    # Date format: yyyy-MM-dd
+    def plot_TB_time(self, min_date='2016-09-01', max_date='2016-10-01', TB_angles=[40, 45]):
+        # Filter dataframe for date range
+        data_df = self.data_df.filter((F.to_date(F.col("Datetime")) >= min_date) & (
+            F.to_date(F.col("Datetime")) <= max_date))
+
+        # Configure matplotlib for legible x-axis datetime markings
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(WeekdayLocator(byweekday=MONDAY))
+        ax.xaxis.set_minor_locator(DayLocator())
+        ax.xaxis.set_major_formatter(DateFormatter('%d %b %y'))
+        plt.xticks(rotation=45)
+
+        for theta in TB_angles:
+            # Compute Daily values
+            pdf = data_df.groupBy(F.to_date("Datetime").alias("Date"))\
+                            .agg(F.avg(f"TBH_{theta}").alias(f"Daily TBH_{theta}"),
+                                F.avg(f"TBV_{theta}").alias(f"Daily TBV_{theta}"),).toPandas()
+
+            # Display plot using Seaborn
+            sns.lineplot(x='Date', y=f'Daily TBH_{theta}',
+                        data=pdf, label=f'Daily TBH_{theta}')
+            sns.lineplot(x='Date', y=f'Daily TBV_{theta}',
+                        data=pdf, label=f'Daily TBV_{theta}')
+
+        plt.xlabel('Date')
+        plt.ylabel('Daily Average')
+        plt.show()

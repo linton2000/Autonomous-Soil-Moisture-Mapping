@@ -32,7 +32,7 @@ tibetan_data_df_schm = StructType([
         StructField('TBV_70', FloatType(), True),
     ])
 
-csv2_df_schm = StructType([
+val_df_schm = StructType([
         StructField('Datetime', StringType(), True),
         StructField('SM2_5_1', FloatType(), True),
         StructField('SM2_5_2', FloatType(), True),

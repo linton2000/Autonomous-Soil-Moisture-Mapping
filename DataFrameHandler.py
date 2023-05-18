@@ -48,6 +48,7 @@ class DataFrameHandler():
             val_df, self.data_df['Datetime'] == val_df['Datetime_LC'], how='inner')
         self.data_df = self.data_df.withColumn('Datetime', F.to_timestamp('Datetime', 'M/d/yyyy H:mm'))\
                                    .drop('Datetime_LC')
+        self.data_df.cache()
 
     def _count_nulls(self):
         null_df = self.data_df.select([F.count(F.when(F.isnan(c) | F.isnull(c), c)).alias(
@@ -93,15 +94,31 @@ class DataFrameHandler():
         for theta in TB_angles:
             # Compute Daily values
             pdf = data_df.groupBy(F.to_date("Datetime").alias("Date"))\
-                            .agg(F.avg(f"TBH_{theta}").alias(f"Daily TBH_{theta}"),
-                                F.avg(f"TBV_{theta}").alias(f"Daily TBV_{theta}"),).toPandas()
+                .agg(F.avg(f"TBH_{theta}").alias(f"Daily TBH_{theta}"),
+                     F.avg(f"TBV_{theta}").alias(f"Daily TBV_{theta}"),).toPandas()
 
             # Display plot using Seaborn
             sns.lineplot(x='Date', y=f'Daily TBH_{theta}',
-                        data=pdf, label=f'Daily TBH_{theta}')
+                         data=pdf, label=f'Daily TBH_{theta}')
             sns.lineplot(x='Date', y=f'Daily TBV_{theta}',
-                        data=pdf, label=f'Daily TBV_{theta}')
+                         data=pdf, label=f'Daily TBV_{theta}')
 
         plt.xlabel('Date')
         plt.ylabel('Daily Average')
+        plt.show()
+
+    def plot_SM_TB(self, TB_angles=[40, 45]):
+        cols = [('Surface Temp', 'Avg_STS_LC')]
+        for theta in TB_angles:
+            for P in ['H', 'V']:
+                cols.append((f'TB{P}_{theta}', f'TB{P}_{theta}'))
+        # Grouping columns by rounded SM and average TB/Temp values for each group
+        for labl, col in cols:
+            pdf = self.data_df.groupBy(F.round(F.col('Avg_SM_LC'), 3).alias('True SM'))\
+                .agg(F.avg(F.col(col)).alias(labl)).toPandas()
+            sns.lineplot(x=labl, y='True SM',
+                         data=pdf, label=labl)
+
+        plt.xlabel('TB & Surface Temp (Kelvin)')
+        plt.ylabel('Soil Moisture (v/v)')
         plt.show()

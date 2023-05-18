@@ -4,9 +4,9 @@ from ParamHandler import ParamHandler
 class Regressor(ABC):
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, params: ParamHandler) -> None:
         pass
 
     @abstractmethod
-    def fit(self, params: ParamHandler) -> None:
+    def fit(self) -> None:
         pass

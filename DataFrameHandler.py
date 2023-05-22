@@ -79,7 +79,7 @@ class DataFrameHandler():
             print(data_pdf.describe())
 
     # Date format: yyyy-MM-dd
-    def plot_TB_time(self, min_date='2016-09-01', max_date='2016-10-01', TB_angles=[40, 45]):
+    def plot_TB_time(self, min_date='2016-09-01', max_date='2016-12-01', TB_angles=[40, 45]):
         # Filter dataframe for date range
         data_df = self.data_df.filter((F.to_date(F.col("Datetime")) >= min_date) & (
             F.to_date(F.col("Datetime")) <= max_date))

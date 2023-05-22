@@ -13,10 +13,15 @@ class ParamHandler:
             'tb_simH': 0,        # Simulated Brightness Temp. (K) for H-pol
             'sm_ret': 0,         # Retrieved soil moisture [v/v]
 
+            'tb_skyV': 0,        # Measured Sky TB_V 
+            'tb_skyH': 0,        # Measured Sky TB_H
+
             'theta': 0,          # Incidence Angle (deg)
             'sand': 0,           # Sand (percent: 0-1)
             'clay': 0,           # Clay (percent: 0-1)
-            'rob': 0,            # Soil Bulk Density (g/cm3)
+            'p_b': 0,            # Soil Bulk Density (g/cm3)
+            'p_s': 0,            # Soil Particle Density
+            'eps_sld': 0,        # Dielectric Constant of Solid Particles (SMOS Lv. 2)
 
             'tauh': 0,           # Vegetation Optical Depth at Nadir
             'tth': 0,            # Vegetation Struct. Param. tth
@@ -30,12 +35,14 @@ class ParamHandler:
             'b_js':  0,          # Vegetation parameter (Jackson)
 
             'xa': 0,             # Parameter A_t used to computed soil temp.
-            # Parameter B_t used to computed soil temp. (Wigneron et al.)
-            'xb': 0,
+            'xb': 0,             # Parameter B_t used to computed soil temp. (Wigneron et al.)
             'freq': 0,           # EM Frequency (L-band = 1.41Ghz)
-            'ts1': 0,            # Surface Temperature (2-5cm)
-            'ts2': 0,            # Average Temp. at Depth (5cm+)
-            'tc': 0,             # Canopy Temp.
+            'tsurf': 0,          # Surface Temperature (2-5cm)
+            'tdept': 0,          # Average Temp. at Depth (5cm+)
+            'tcanp': 0,          # Canopy Temp.
+
+            'w0': 0,             # Semi-empirical surface temp param 1
+            'bw0': 0,            # Semi-empirical surface temp param 2  (Wigneron et al.)
         }
 
         if self.data_opt == 'tibetan':

@@ -11,7 +11,7 @@ class LMEBRegressor(Regressor):
     }
     # Wigneron et al. L-MEB Calibration
     wig_dict = {
-        'w0': 0.3, 
+        'w0': 0.3,
         'bw0': 0.3
     }
 
@@ -19,6 +19,7 @@ class LMEBRegressor(Regressor):
     dob_dict = {
         'p_s': 2.664,
         'eps_sld': 4.7,
+        'dob_alpha': 0.65,
     }
 
     def __init__(self, params: ParamHandler) -> None:
@@ -48,39 +49,33 @@ class LMEBRegressor(Regressor):
 
             # Using Dobson (1995)
             def get_permittivity():
-                pass
+                sm, ps, pb, es, al = p['sm_ret'], p['p_s'], p['p_b'], p['eps_sld'], p['dob_alpha']
+                
 
             def get_reflectivity():
-                pass
+                refl_fresnel = 0
+                return refl_fresnel*np.exp(-hret*np.cos(theta))
 
             def get_optical_depth():
-                pass
+                tau_veg = (b1s * lai * b2s) * \
+                    (tt * np.sin(theta)**2 + np.cos(theta)**2)
+                return tau_veg + tau_lit + tau_inc
 
             def get_roughness_params():
-                pass
+                hret = p['sand'] - p['clay']*p['sm_ret']
 
-            
-
-            # Optical Depth
-            tau_veg = (b1s * lai * b2s) * \
-                (tt * np.sin(theta)**2 + np.cos(theta)**2)
-            tau = tau_veg + tau_lit + tau_inc
-
-            # Reflectivity
-            refl_fresnel = 
-            refl_gr = refl_fresnel*np.exp(-hret*np.cos(theta))
-
-            # Roughness
-            hret = p['sand'] - p['clay']*p['sm_ret']
-
-            # Temperature
-            c_t = (p['sm_ret']/p['w0'])**p['bw0']
             # Choudhary et al. (1982)
-            temp_gr = p['tdept'] + c_t*(p['tsurf'] - p['tdept'])
+            def get_temperature():
+                c_t = (p['sm_ret']/p['w0'])**p['bw0']
+                temp_gr = p['tdept'] + c_t*(p['tsurf'] - p['tdept'])
+                temp_cp = 0
+                return temp_cp, temp_gr
 
             # Putting it all together
+            tau = get_optical_depth()
+            refl_gr = get_reflectivity()
+            temp_cp, temp_gr = get_temperature()
+
             gamma = np.exp(-tau / np.cos(theta))
             tb = (1 - omega)*(1 - gamma)*(1 + gamma*refl_gr) * \
                 temp_cp + (1-refl_gr)*gamma*temp_gr
-
-    

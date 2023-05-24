@@ -15,10 +15,12 @@ class LMEBRegressor(Regressor):
         'bw0': 0.3
     }
 
-    # Dobson Calibration
+    # Dobson Parameters
     dob_dict = {
-        'p_s': 2.664,
+        'rhos': 2.664,
         'eps_sld': 4.7,
+        'eps_whf': 4.9,
+        'eps_free': 8.854e-12,
         'dob_alpha': 0.65,
     }
 
@@ -47,10 +49,38 @@ class LMEBRegressor(Regressor):
                 omega = p['omgv']
                 tb_sky = p['tb_skyV']
 
-            # Using Dobson (1995)
+            # Dobson et al (1995 & 1985)
             def get_permittivity():
-                sm, ps, pb, es, al = p['sm_ret'], p['p_s'], p['p_b'], p['eps_sld'], p['dob_alpha']
-                
+                sm, rhos, rhob, eps_sld, alpha = p['sm_ret'], p['rhos'], p['rhob'], p['eps_sld'], p['dob_alpha']
+                sand, clay, eps_whf, es0 = p['sand'], p['clay'], p['eps_whf'], p['eps_free']
+
+                # Soil texture dependent co-efficients
+                b1 = (127.48 - 0.519*sand - 0.152*clay)/100
+                b2 = (1.33797 - 0.603*sand - 0.166*clay)/100
+                sge = 1.645 + 1.939*rhob - 0.02013*sand + 0.01594*clay
+
+                # Ulaby et al., vol 3 (source: Ann Hsu's dobson script)
+                _, ts = get_temperature()
+                f = 1.41e9    # Frequency in Hz
+                # Water Static dielectric const.
+                eps_w0 = 88.045 - 0.4147*ts + 6.295e-4*ts ^ 2 + 1.075e-5*ts ^ 3
+                # Water relaxation time
+                rel_time = 1.41*(1.1109e-1 - 3.824e-3*ts +
+                                 6.938e-5*ts ^ 2 - 5.096e-7*ts ^ 3)
+
+                # Dielectric Constant of Soil Free water
+                eps_fwr = eps_whf + ((eps_w0 - eps_whf) /
+                                     (1 + (2*np.pi*f*rel_time)**2))
+                eps_fwi1 = (2*np.pi*f*rel_time*(eps_w0-eps_whf)) / \
+                    (1 + (2*np.pi*f*rel_time)**2)
+                eps_fwi = eps_fwi1 + \
+                    (sge/(2*np.pi*f*eps_w0))*((rhos-rhob)/(rhos*sm))
+
+                # Soil dielectric constant aka permittivity
+                eps_real = (1 + (rhob/rhos)*(eps_sld**alpha - 1) +
+                            (sm**b1)*(eps_fwr**alpha) - sm)**(1/alpha)
+                eps_cplx = ((sm**b2)*(eps_fwi**alpha))**(1/alpha)
+                return complex(eps_real, eps_cplx)
 
             def get_reflectivity():
                 refl_fresnel = 0

@@ -19,12 +19,12 @@ class ParamHandler:
             'theta': 0,          # Incidence Angle (deg)
             'sand': 0,           # Sand (percent: 0-1)
             'clay': 0,           # Clay (percent: 0-1)
-            'p_b': 0,            # Soil Bulk Density (g/cm3)
+            'rhob': 0,            # Soil Bulk Density (g/cm3)
 
-            # From SMOS Lv. 2
-            'p_s': 0,            # Soil Particle Density
+            'rhos': 0,            # Soil Particle Density
             'eps_sld': 0,        # Dielectric Constant of Solid Particles
             'eps_whf': 0,        # High Frequency Limit of water dielectric constant
+            'eps_free': 0,       # Permittivity of free space
             'dob_alpha': 0,      # Dobson's model co-efficient exponent
 
             'tauh': 0,           # Vegetation Optical Depth at Nadir

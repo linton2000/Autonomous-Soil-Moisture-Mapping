@@ -82,17 +82,17 @@ class LMEBRegressor(Regressor):
                 eps_cplx = ((sm**b2)*(eps_fwi**alpha))**(1/alpha)
                 return complex(eps_real, eps_cplx)
 
+            # Rough Surface Relfectivity (Wigneron et al.)
             def get_reflectivity():
                 refl_fresnel = 0
+                hret = p['sand'] - p['clay']*p['sm_ret']
+                # Q and N can be set to 0 at low freq (eg. L-band)
                 return refl_fresnel*np.exp(-hret*np.cos(theta))
 
             def get_optical_depth():
                 tau_veg = (b1s * lai * b2s) * \
                     (tt * np.sin(theta)**2 + np.cos(theta)**2)
                 return tau_veg + tau_lit + tau_inc
-
-            def get_roughness_params():
-                hret = p['sand'] - p['clay']*p['sm_ret']
 
             # Choudhary et al. (1982)
             def get_temperature():

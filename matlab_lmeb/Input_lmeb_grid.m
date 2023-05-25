@@ -8,24 +8,14 @@
 %
 % Xiaoling Wu, adapted to SMAPEx grids
 % 05/2013
-%
-clc;
-clear all;
-%*****************
-% GLOBAL VARIABLES
-%*****************
-global tbsim
-global tbobs
-%*****************
-% INPUTS
-%*****************
-%L-MEB parameters 
+
+clc; clear;
+%#ok<*GVMIS>
+global tbsim; %#ok<NUSED>
+global tbobs; %#ok<NUSED>
 
 SMcol = zeros(17568,1);
 TBerrcol = zeros(17568,1);
-
-% load brightness temperature data
-%cd('/Volumes/Lingling/Working/Bayesian paper/SMAP data download/0510')
 
 load data_0502
 load PLMR_TBv_0510_36km    %ELBARA brightness temperature TBv
@@ -71,14 +61,10 @@ for i = 1:4
     tc = 300;  % Canopy temperature
     tgc0 = 300;  % Effective ground/canopy temperature --NOT USED
 
-    %*****************
-    % RETRIEVAL
-    %*****************
     % Build input vector
     frac_parameters = [sand clay rob ts1 ts2 tc teta tauh0 tgc0 tth0 rtt0 omgh0 domg0 hsol0 qsol0 nsolv0 nsolh0];
     Call_lmeb_call(ret);
-    [x,resnorm,residual,exitflag,output,lambda,jacobian] = Solver_lmeb;
-    %x
+    [x,resnorm,residual,exitflag,output,lambda,jacobian] = Solver_lmeb();
     %TBerr(i,1) = resnorm;
     SMcol(i,1) = x;
 end

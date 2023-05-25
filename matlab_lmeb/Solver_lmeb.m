@@ -1,4 +1,4 @@
-function [x,resnorm,residual,exitflag,output,lambda,jacobian] = Solver_lmeb
+function [x,resnorm,residual,exitflag,output,lambda,jacobian] = Solver_lmeb()
 
 % This functions is called by "Input_lmeb"
 % to perform least square optimization of L-MEB
@@ -8,11 +8,16 @@ function [x,resnorm,residual,exitflag,output,lambda,jacobian] = Solver_lmeb
 % It calls function "Call_lmeb_call" to calculate L-MEB brightness
 % temperatures given a soil moisture guess.
 
-
+%#ok<*GVMIS>
+global conf;
 % Start with the default options
 options = optimset;
 % Modify options setting
-options = optimset(options,'Display' ,'on');
+if conf(3) == 1
+    options = optimset(options,'Display' ,'on');
+else
+    options = optimset(options,'Display' ,'off');
+end
 options = optimset(options,'LargeScale' ,'on');
 % options = optimset(options,'TolFun' ,0.01);
 % options = optimset(options,'TolX' ,0.001);

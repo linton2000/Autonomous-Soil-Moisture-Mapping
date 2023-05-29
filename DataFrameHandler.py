@@ -7,11 +7,23 @@ from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY
 
 
 class DataFrameHandler():
-    def __init__(self) -> None:
-        # Apache Spark (Data Extraction, Processing & ML engine) initialization
-        self.spark: SparkSession = SparkSession.builder.master('local[*]')\
-                                                       .appName('SM Retreival App').getOrCreate()
-        self.spark.sparkContext.setLogLevel('ERROR')
+    def __init__(self, data_opt='tibobs') -> None:
+        # Spark Initalisation
+        root_dir = '/Users/lintoncharles/Documents/University/FIT4701_2/code/Autonomous-Soil-Moisture-Mapping/'
+        spark = SparkSession.builder\
+                            .master('local[*]')\
+                            .appName('SM Retreival App')\
+                            .config('spark.sql.warehouse.dir', root_dir)\
+                            .getOrCreate()
+        spark.sparkContext.setLogLevel('ERROR')
+
+        # Loading CSV Data
+        csv_path = ''
+        if data_opt == 'tibobs': csv_path = 'combined_tibobs.csv'
+        self.data_df = spark.read.format('csv')\
+                                 .options(header=True, multiline=True, inferSchema=True)\
+                                 .option('delimiter', '|')\
+                                 .load(csv_path)
 
     def _count_nulls(self):
         null_df = self.data_df.select([F.count(F.when(F.isnan(c) | F.isnull(c), c)).alias(

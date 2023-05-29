@@ -4,8 +4,7 @@ from DataFrameHandler import DataFrameHandler
 class ParamHandler:
 
     def __init__(self, data_opt) -> None:
-        self.data_opt: str = data_opt
-        self.df_handler: DataFrameHandler = DataFrameHandler()
+        self.df_handler: DataFrameHandler = DataFrameHandler(data_opt)
 
         # Variable (Retrieval) Parameters
         self.param_dict: dict = {
@@ -48,9 +47,6 @@ class ParamHandler:
             'w0': 0,             # Semi-empirical surface temp param 1
             'bw0': 0,            # Semi-empirical surface temp param 2  (Wigneron et al.)
         }
-
-        if self.data_opt == 'tibetan':
-            self.df_handler.load_tibetan_csv_data()
 
     # Updating param_dict with a new subset dict
     def patch_dict(self, ndict: dict) -> dict:

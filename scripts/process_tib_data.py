@@ -8,7 +8,7 @@ sys.path.append(ROOT_DIR)
 from DataFrameHandler import DataFrameHandler
 
 if __name__ == '__main__':
-    df_handler = DataFrameHandler()
+    df_handler = DataFrameHandler(data_opt='tibobs')
     df_handler.data_df = df_handler.data_df.dropna().drop('Datetime_LC').drop('Datetime_LAI')
     df_handler.print_data_df(show_all=True)
     df_handler.data_df.write.option("header",True)\

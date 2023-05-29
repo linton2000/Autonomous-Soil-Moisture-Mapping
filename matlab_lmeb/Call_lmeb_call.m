@@ -8,7 +8,6 @@ function [cf] = Call_lmeb_call(ret)
 
 %#ok<*GVMIS>
 global conf;
-res = [];
 
 % evaluate input arrays  from base workspace
 yobsv = evalin('base','Tbv');
@@ -25,6 +24,7 @@ tbsim = horzcat(ysimv,ysimh);
 
 %*************************************************************************
 % Calculate cost function
-% cf = sum((yobs-Tbsim).^2);
+cf = sum((tbobs-tbsim).^2);
 %*************************************************************************
-cf = tbobs-tbsim;  % the algorithm implicitly squares and sums elements of array cf
+% cf = tbobs-tbsim;  % Implicit squaring and summing
+

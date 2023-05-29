@@ -24,4 +24,4 @@ options = optimset(options,'LargeScale' ,'on');
 options = optimset(options,'MaxFunEvals' ,10000);
 % options = optimset(options,'LevenbergMarquardt' ,'on');
 [x,resnorm,residual,exitflag,output,lambda,jacobian] = ...
-lsqnonlin(@Call_lmeb_call,0.1,0,0.5,options);
+lsqnonlin(@Call_lmeb_call, 0.01, 0, 5, options);

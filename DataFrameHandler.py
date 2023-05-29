@@ -7,7 +7,7 @@ from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY
 
 
 class DataFrameHandler():
-    def __init__(self, data_opt='tibobs') -> None:
+    def __init__(self, data_opt) -> None:
         # Spark Initalisation
         root_dir = '/Users/lintoncharles/Documents/University/FIT4701_2/code/Autonomous-Soil-Moisture-Mapping/'
         spark = SparkSession.builder\

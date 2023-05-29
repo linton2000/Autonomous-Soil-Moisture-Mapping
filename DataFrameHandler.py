@@ -1,11 +1,9 @@
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 import pandas as pd
-from pyspark.sql.types import DoubleType, FloatType
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY
-from schema import tibetan_data_df_schm, val_df_schm
 
 
 class DataFrameHandler():
@@ -14,41 +12,6 @@ class DataFrameHandler():
         self.spark: SparkSession = SparkSession.builder.master('local[*]')\
                                                        .appName('SM Retreival App').getOrCreate()
         self.spark.sparkContext.setLogLevel('ERROR')
-
-    def load_tibetan_csv_data(self, mes_csv='TB_measurement_data.csv', val_csv='SM_temp_validation_data.csv') -> None:
-        # Reading CSV Files
-        self.data_df = self.spark.read.format('csv').options(header=True, multiline=True, inferSchema=True)\
-                                      .schema(tibetan_data_df_schm).load(mes_csv)
-        val_df = self.spark.read.format('csv').options(header=True, multiline=True, inferSchema=True)\
-            .schema(val_df_schm).load(val_csv)
-
-        # Extracting needed columns
-        data_cols = ['Datetime', 'TBH_40', 'TBV_40', 'TBH_45', 'TBV_45', 'TBH_50', 'TBV_50',
-                     'TBH_55', 'TBV_55', 'TBH_60', 'TBV_60', 'TBH_65', 'TBV_65', 'TBH_70', 'TBV_70']
-        self.data_df = self.data_df.select(data_cols)
-
-        # Calculating Avg. Soil Moisuture & Temp for data df
-        @F.udf
-        def avg_func(cols):
-            res, count = 0, 0
-            for cl in cols:
-                if cl is not None:
-                    res += cl
-                    count += 1
-            return res/count
-
-        val_df = val_df.withColumn('Avg_SM_LC', avg_func(F.array(val_df.columns[1:21])).cast('float'))\
-            .withColumn('Avg_STS_LC', avg_func(F.array(val_df.columns[21:24])).cast('float'))\
-            .withColumn('Avg_STD_LC', avg_func(F.array(val_df.columns[24:])).cast('float'))\
-            .withColumnRenamed('Datetime', 'Datetime_LC')\
-            .select('Datetime_LC', 'Avg_SM_LC', 'Avg_STS_LC', 'Avg_STD_LC')
-
-        # Joining Measured data with corresponding validation data
-        self.data_df = self.data_df.join(
-            val_df, self.data_df['Datetime'] == val_df['Datetime_LC'], how='inner')
-        self.data_df = self.data_df.withColumn('Datetime', F.to_timestamp('Datetime', 'M/d/yyyy H:mm'))\
-                                   .drop('Datetime_LC')
-        self.data_df.cache()
 
     def _count_nulls(self):
         null_df = self.data_df.select([F.count(F.when(F.isnan(c) | F.isnull(c), c)).alias(

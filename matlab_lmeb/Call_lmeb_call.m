@@ -24,7 +24,7 @@ tbsim = horzcat(ysimv,ysimh);
 
 %*************************************************************************
 % Calculate cost function
-cf = sum((tbobs-tbsim).^2);
+% cf = sum((tbobs-tbsim).^2);
 %*************************************************************************
-% cf = tbobs-tbsim;  % Implicit squaring and summing
+cf = tbobs-tbsim;  % Implicit squaring and summing
 

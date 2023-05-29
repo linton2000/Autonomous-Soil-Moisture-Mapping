@@ -39,11 +39,10 @@ mc=ret(1);   % soil moisture [v/v]
 % mc=evalin('base','groundmc'); % ONLY IF running HR_RETRIEVAL!!
 
 %if optopt==0
-% tauh0=param(8);  % optical depth at NADIR= b*WVC
+tauh0=param(8);  % optical depth at NADIR= b*WVC
 %elseif optopt==1
 %tauh0=ret(2);     % if retrieving optical depth
 %end
-tauh0 = 0.5;
 
 tgc0=param(9);   % tgc = effective ground/canopy temperature (Cf Wigneron et al., 2007)
 tth0=param(10);    % tth= equivalent to cpol at H (Cf Wigneron et al., 2007)

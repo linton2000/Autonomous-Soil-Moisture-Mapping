@@ -50,5 +50,6 @@ class DataFrameHandler():
             print('\nNull Counts:')
             print(DataFrameHandler._count_nulls(self).toPandas())
         if show_stats:
+            pd.set_option('display.max_columns', None)
             print('\nStatistical Summary:')
-            print(data_pdf.describe())
+            print(self.data_df.toPandas().describe())

@@ -14,9 +14,30 @@ class MLRegressor(Regressor):
             inputCol=assembler.getOutputCol(), outputCol='features')
         self.pipe = Pipeline(stages=[assembler, normalizer])
 
-    def fit(self, df: DataFrame, split=[0.8, 0.2], metrics={'rmse': 0, 'mae': 0, 'r2': 0}, verbose=False):
+    def fit(self, df: DataFrame, metric=None, split=[0.8, 0.2], type='basic'):
         df = df.withColumnRenamed('Avg_SM_LC', 'label')
-        train, test = df.randomSplit(split, 42)
+        self.train, self.test = df.randomSplit(split, 42)
+        if type == 'basic':
+            return MLRegressor._basic_fit(self)
+        elif type == 'feat':
+            return MLRegressor._feat_fit(self, metric)
+        elif type == 'dt':
+            return MLRegressor._dt_fit(self)
+        else:
+            raise Exception(f'Invalid fit type {type} in MLRegressor.fit()')
+    
+    def _dt_fit(self):
+        pipeline = Pipeline(stages=[self.pipe, DecisionTreeRegressor()])
+        pipe_mdl = pipeline.fit(self.train)
+        return pipe_mdl.stages[-1].featureImportances.toArray(), pipe_mdl.stages[0].stages[0].getInputCols()
+
+    def _feat_fit(self, metric):
+        pipeline = Pipeline(stages=[self.pipe, GBTRegressor()])
+        pipe_mdl = pipeline.fit(self.train)
+        predictions = pipe_mdl.transform(self.test)
+        return RegressionEvaluator(metricName=metric).evaluate(predictions)
+    
+    def _basic_fit(self, metrics={'rmse': 0, 'mae': 0, 'r2': 0}, verbose=False):
         eval_dict = {'Linear Regression': LinearRegression(),
                      'Decision Tree': DecisionTreeRegressor(),
                      'Random Forest': RandomForestRegressor(),
@@ -24,8 +45,8 @@ class MLRegressor(Regressor):
 
         for key, model in eval_dict.items():
             pipeline = Pipeline(stages=[self.pipe, model])
-            pipe_mdl = pipeline.fit(train)
-            predictions = pipe_mdl.transform(test)
+            pipe_mdl = pipeline.fit(self.train)
+            predictions = pipe_mdl.transform(self.test)
             for metric, _ in metrics.items():
                 eval = RegressionEvaluator(
                     metricName=metric).evaluate(predictions)

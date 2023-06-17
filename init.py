@@ -1,6 +1,7 @@
-from LMEBRegressor import LMEBRegressor
+from SMRetriever import SMRetriever
 from ParamHandler import ParamHandler
 
 if __name__ == '__main__':
     params = ParamHandler(data_opt='tibobs')
-    params.df_handler.print_data_df(show_all=True)
+    retriever = SMRetriever(params=params)
+    retriever.save_basic_ml()

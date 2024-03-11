@@ -17,13 +17,24 @@ clear;
 global tbsim; %#ok<NUSED>
 global tbobs; %#ok<NUSED>
 
+% Load Tib-Obs Maqu network Data
+% [Tbvcol, Tbhcol, stemp, dtemp, lai, true_sm] = load_tibetan(nrecs);
+
+% Load Oval Area sampling data
+R1 = getfield(load("geodata_r1.mat"), 'fdata');
+R2 = getfield(load("geodata_r2.mat"), 'fdata');
+R3 = getfield(load("geodata_r3.mat"), 'fdata');
+R_all = vertcat(R1, R2, R3);
+Tbhcol = mean(R_all(:, 2:5), 2, "omitnan");
+Tbvcol = mean(R_all(:, 6:9), 2, "omitnan");
+Tbvcol = Tbvcol(~isnan(Tbvcol));
+Tbhcol = Tbhcol(~isnan(Tbhcol));
+
 % Initialise result vectors
-nrecs = 13679;    % Total tibobs record count = 13680
+% nrecs = 13679;    % Total tibobs record count = 13680
+nrecs = length(Tbvcol);
 SMcol = zeros(nrecs,1);
 TBerrcol = zeros(nrecs,1);
-
-% Load Tib-Obs Maqu network Data
-[Tbvcol, Tbhcol, stemp, dtemp, lai, true_sm] = load_tibetan(nrecs);
 
 % Calibrate model parameters
 sand = 0.303;   % sand content (0-1)
@@ -50,8 +61,8 @@ for i = 1:nrecs
     Tbv = Tbvcol(i);  % V-pol 
     Tbh = Tbhcol(i);   % H-pol 
 
-    ts1 = stemp(i);
-    ts2 = dtemp(i);
+    ts1 = 225; % stemp(i);
+    ts2 = ts1; % dtemp(i);
 
     tc = ts1;  % Canopy temperature
     tgc0 = ts1;  % Effective ground/canopy temperature --NOT USED
@@ -64,6 +75,6 @@ for i = 1:nrecs
     SMcol(i) = x;
 end
 
-disp('Root Mean Square Error (Soil Moisture): ')
-disp(compute_rmse(true_sm, SMcol));
-store_tibetan([Tbvcol, Tbhcol, stemp, dtemp, lai, true_sm, SMcol])
+%disp('Root Mean Square Error (Soil Moisture): ')
+%disp(compute_rmse(true_sm, SMcol));
+%store_tibetan([Tbvcol, Tbhcol, stemp, dtemp, lai, true_sm, SMcol])

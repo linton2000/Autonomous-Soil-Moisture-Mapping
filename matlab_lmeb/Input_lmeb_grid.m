@@ -27,8 +27,9 @@ R3 = getfield(load("geodata_r3.mat"), 'fdata');
 R_all = vertcat(R1, R2, R3);
 Tbhcol = mean(R_all(:, 2:5), 2, "omitnan");
 Tbvcol = mean(R_all(:, 6:9), 2, "omitnan");
-Tbvcol = Tbvcol(~isnan(Tbvcol));
-Tbhcol = Tbhcol(~isnan(Tbhcol));
+selected = ~isnan(Tbvcol); % Recording nan eliminated values
+Tbvcol = Tbvcol(selected);
+Tbhcol = Tbhcol(selected);
 
 % Initialise result vectors
 % nrecs = 13679;    % Total tibobs record count = 13680
@@ -61,7 +62,7 @@ for i = 1:nrecs
     Tbv = Tbvcol(i);  % V-pol 
     Tbh = Tbhcol(i);   % H-pol 
 
-    ts1 = 225; % stemp(i);
+    ts1 = 295; % stemp(i);
     ts2 = ts1; % dtemp(i);
 
     tc = ts1;  % Canopy temperature
@@ -74,6 +75,9 @@ for i = 1:nrecs
     TBerrcol(i) = resnorm;
     SMcol(i) = x;
 end
+
+RES = [R_all(selected, :) SMcol];
+save("geodata_rall_SM", "RES");
 
 %disp('Root Mean Square Error (Soil Moisture): ')
 %disp(compute_rmse(true_sm, SMcol));

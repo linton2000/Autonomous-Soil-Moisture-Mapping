@@ -2,5 +2,6 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8"
   },
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "none",
+  "python.pythonPath": "/opt/homebrew/opt/python@3.11/bin/python3.11",
 }

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date, time
 import pandas as pd
 import math
+import seaborn as sns
 
 def load_mat_into_pd(fpath, matVar):
     mat = sp.loadmat('matlab_lmeb/geodata_r1.mat')  # load mat-file
@@ -81,3 +82,13 @@ def utmToLatLng(zone, easting, northing, northernHemisphere=False):
     longitude = ((zone > 0) and (6 * zone - 183.0) or 3.0) - _a3
 
     return (latitude, longitude)
+
+def plotSMMap(df, latStr, lngStr, hueStr, title):
+    smPalette = sns.color_palette("ch:s=.25,rot=-.25", as_cmap=True)
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x=lngStr, y=latStr, hue=hueStr, palette=smPalette)
+    plt.title(title)
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    ax.set_xticks(ax.get_xticks()[::2])
+    ax.set_yticks(ax.get_yticks()[::2])
